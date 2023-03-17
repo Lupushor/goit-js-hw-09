@@ -2,15 +2,13 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import Notiflix from 'notiflix';
 
-const text = document.querySelector('#datetime-picker');
-
-const timer = document.querySelector('.timer');
+const dateChose = document.querySelector('#datetime-picker');
 const startBtn = document.querySelector('button[data-start]');
 
-const data = document.querySelector('.value[data-days]');
-const hour = document.querySelector('.value[data-hours]');
-const minute = document.querySelector('.value[data-minutes]');
-const second = document.querySelector('.value[data-seconds]');
+const days = document.querySelector('.value[data-days]');
+const hours = document.querySelector('.value[data-hours]');
+const minutes = document.querySelector('.value[data-minutes]');
+const seconds = document.querySelector('.value[data-seconds]');
 
 startBtn.disabled = true;
 
@@ -20,9 +18,18 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    if (selectedDates[0] < options.defaultDate) {
+      Notiflix.Notify.failure('Please choose a date in the future');
+      startBtn.disabled = true;
+    } else {
+      startBtn.disabled = false;
+    }
+
+    // console.log(selectedDates[0]);
   },
 };
+
+flatpickr(dateChose, options);
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -42,3 +49,28 @@ function convertMs(ms) {
 
   return { days, hours, minutes, seconds };
 }
+
+const onStart = () => {
+  let Timer = setInterval(() => {
+    let countdown = new Date(dateChose.value) - new Date();
+
+    startBtn.disabled = true;
+
+    if (countdown >= 0) {
+      let timeObject = convertMs(countdown);
+
+      days.textContent = addLeadingZero(timeObject.days);
+      hours.textContent = addLeadingZero(timeObject.hours);
+      minutes.textContent = addLeadingZero(timeObject.minutes);
+      seconds.textContent = addLeadingZero(timeObject.seconds);
+    } else {
+      clearInterval(Timer);
+    }
+  }, 1000);
+};
+
+const addLeadingZero = value => {
+  return String(value).padStart(2, '0');
+};
+
+startBtn.addEventListener('click', onStart);
